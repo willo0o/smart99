@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智慧工务巡检作业管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body class="tech-grid">
+<div id="app">
+
+  <!-- ════════════════════ HEADER ════════════════════ -->
+  <header class="header">
+    <div class="header-logo">
+      <i class="fa-solid fa-industry"></i>
+    </div>
+    <div class="header-title">
+      <span>智慧工务</span>巡检作业管理系统
+    </div>
+
+    <div class="unit-tabs">
+      <div class="unit-tab" data-unit="1" onclick="switchUnit(1)">1#机组</div>
+      <div class="unit-tab" data-unit="2" onclick="switchUnit(2)">2#机组</div>
+      <div class="unit-tab active" data-unit="3" onclick="switchUnit(3)">3#机组</div>
+    </div>
+
+    <div class="header-spacer"></div>
+    <div class="header-deco">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="header-clock" id="header-clock">2026-04-30 00:00:00</div>
+    <div class="header-user">
+      <i class="fa-solid fa-circle-user"></i>
+      <span>管理员</span>
+      <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+    </div>
+  </header>
+
+  <!-- ════════════════════ SUB-NAV ════════════════════ -->
+  <nav class="subnav">
+    <div class="subnav-tab active" data-process="A" onclick="switchProcess('A')">工艺控制系统A</div>
+    <div class="subnav-tab" data-process="B" onclick="switchProcess('B')">工艺控制系统B</div>
+    <div class="subnav-right">
+      <span><span class="status-dot"></span>系统运行正常</span>
+      <span style="color:rgba(0,212,255,0.4)">|</span>
+      <span>数据采集: <span style="color:var(--safe)">正常</span></span>
+      <span style="color:rgba(0,212,255,0.4)">|</span>
+      <span>模型状态: <span style="color:var(--safe)">V11 运行中</span></span>
+    </div>
+  </nav>
+
+  <!-- ════════════════════ MAIN CONTENT ════════════════════ -->
+  <div class="main-content">
+    <div class="process-area">
+
+      <!-- ────── PROCESS A SVG ────── -->
+      <div class="process-view active" data-process="A">
+        <svg viewBox="0 0 1100 480" xmlns="http://www.w3.org/2000/svg"
+             style="width:100%;height:100%;background:transparent;">
+          <defs>
+            <filter id="glow-blue">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <linearGradient id="tank-grad-a" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a3a6a"/>
+              <stop offset="100%" style="stop-color:#0a1e3c"/>
+            </linearGradient>
+            <linearGradient id="tank-grad-b" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a3060"/>
+              <stop offset="100%" style="stop-color:#080e22"/>
+            </linearGradient>
+            <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="rgba(0,212,255,0.5)"/>
+            </marker>
+          </defs>
+
+          <!-- Background grid texture -->
+          <rect width="1100" height="480" fill="none"/>
+
+          <!-- ── PIPES (main horizontal/vertical network) ── -->
+          <!-- Left collection pipe -->
+          <line x1="160" y1="220" x2="320" y2="220" stroke="#1a4a8a" stroke-width="8" stroke-linecap="round"/>
+          <line x1="160" y1="220" x2="320" y2="220" stroke="rgba(0,212,255,0.4)" stroke-width="3"
+                class="pipe-flow" stroke-linecap="round"/>
+
+          <!-- Main header pipe (horizontal) -->
+          <line x1="320" y1="220" x2="680" y2="220" stroke="#1a4a8a" stroke-width="10" stroke-linecap="round"/>
+          <line x1="320" y1="220" x2="680" y2="220" stroke="rgba(0,212,255,0.5)" stroke-width="3"
+                class="pipe-flow" stroke-linecap="round"/>
+
+          <!-- Right pipe to chimney -->
+          <line x1="680" y1="220" x2="900" y2="220" stroke="#1a4a8a" stroke-width="8" stroke-linecap="round"/>
+          <line x1="680" y1="220" x2="900" y2="220" stroke="rgba(0,212,255,0.4)" stroke-width="3"
+                class="pipe-flow" stroke-linecap="round"/>
+
+          <!-- Tank A vertical connection -->
+          <line x1="100" y1="100" x2="100" y2="220" stroke="#1a4a8a" stroke-width="6"/>
+          <line x1="100" y1="100" x2="100" y2="220" stroke="rgba(0,212,255,0.35)" stroke-width="2"
+                class="pipe-flow-slow" stroke-linecap="round"/>
+
+          <!-- Tank B vertical connection -->
+          <line x1="160" y1="320" x2="160" y2="220" stroke="#1a4a8a" stroke-width="6"/>
+          <line x1="160" y1="320" x2="160" y2="220" stroke="rgba(0,212,255,0.35)" stroke-width="2"
+                class="pipe-flow-rev" stroke-linecap="round"/>
+
+          <!-- Reactor vertical pipes -->
+          <line x1="500" y1="140" x2="500" y2="220" stroke="#1a4a8a" stroke-width="8"/>
+          <line x1="500" y1="140" x2="500" y2="220" stroke="rgba(0,212,255,0.5)" stroke-width="3"
+                class="pipe-flow-slow" stroke-linecap="round"/>
+          <line x1="500" y1="360" x2="500" y2="220" stroke="#1a4a8a" stroke-width="8"/>
+          <line x1="500" y1="360" x2="500" y2="220" stroke="rgba(0,212,255,0.3)" stroke-width="3"
+                class="pipe-flow-rev" stroke-linecap="round"/>
+
+          <!-- Return loop pipes -->
+          <line x1="320" y1="220" x2="320" y2="300" stroke="#1a4080" stroke-width="5"/>
+          <line x1="320" y1="300" x2="160" y2="300" stroke="#1a4080" stroke-width="5"/>
+          <line x1="320" y1="220" x2="320" y2="300" stroke="rgba(0,150,255,0.3)" stroke-width="2" class="pipe-flow-slow"/>
+          <line x1="320" y1="300" x2="160" y2="300" stroke="rgba(0,150,255,0.3)" stroke-width="2" class="pipe-flow-rev"/>
+
+          <!-- Upper bypass pipe -->
+          <line x1="320" y1="220" x2="320" y2="150" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="320" y1="150" x2="500" y2="150" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="320" y1="220" x2="320" y2="150" stroke="rgba(0,180,255,0.25)" stroke-width="2" class="pipe-flow-slow"/>
+          <line x1="320" y1="150" x2="500" y2="150" stroke="rgba(0,180,255,0.25)" stroke-width="2" class="pipe-flow"/>
+
+          <!-- Pump 3 loop -->
+          <line x1="660" y1="220" x2="660" y2="310" stroke="#1a4080" stroke-width="5"/>
+          <line x1="660" y1="310" x2="500" y2="310" stroke="#1a4080" stroke-width="5"/>
+          <line x1="660" y1="220" x2="660" y2="310" stroke="rgba(0,150,255,0.3)" stroke-width="2" class="pipe-flow-slow"/>
+          <line x1="660" y1="310" x2="500" y2="310" stroke="rgba(0,150,255,0.3)" stroke-width="2" class="pipe-flow-rev"/>
+
+          <!-- Drain pipe -->
+          <line x1="500" y1="400" x2="800" y2="400" stroke="#0d2a56" stroke-width="5"/>
+          <line x1="500" y1="400" x2="800" y2="400" stroke="rgba(0,100,200,0.2)" stroke-width="2" class="pipe-flow-slow"/>
+          <line x1="800" y1="400" x2="800" y2="340" stroke="#0d2a56" stroke-width="5"/>
+
+          <!-- ── TANK A (top-left) ── -->
+          <g transform="translate(60, 30)">
+            <!-- cylinder body -->
+            <rect x="0" y="20" width="80" height="70" rx="4" fill="url(#tank-grad-a)"
+                  stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <!-- top cap -->
+            <ellipse cx="40" cy="20" rx="40" ry="10" fill="#1a3a6a" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <!-- bottom cap -->
+            <ellipse cx="40" cy="90" rx="40" ry="10" fill="#0f2248" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <!-- liquid level indicator -->
+            <rect x="2" y="35" width="76" height="40" rx="2" fill="rgba(0,100,200,0.18)"/>
+            <!-- label -->
+            <text x="40" y="58" text-anchor="middle" fill="rgba(180,210,255,0.9)" font-size="11">原料罐A</text>
+            <!-- level bar -->
+            <rect x="76" y="22" width="4" height="68" rx="2" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="76" y="48" width="4" height="42" rx="2" fill="rgba(0,212,255,0.6)"/>
+          </g>
+
+          <!-- ── TANK B (lower-left) ── -->
+          <g transform="translate(120, 250)">
+            <rect x="0" y="20" width="80" height="70" rx="4" fill="url(#tank-grad-a)"
+                  stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="40" cy="20" rx="40" ry="10" fill="#1a3a6a" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="40" cy="90" rx="40" ry="10" fill="#0f2248" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <rect x="2" y="35" width="76" height="30" rx="2" fill="rgba(0,100,200,0.15)"/>
+            <text x="40" y="58" text-anchor="middle" fill="rgba(180,210,255,0.9)" font-size="11">原料罐B</text>
+            <rect x="76" y="22" width="4" height="68" rx="2" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="76" y="50" width="4" height="40" rx="2" fill="rgba(0,212,255,0.5)"/>
+          </g>
+
+          <!-- ── REACTOR / MAIN VESSEL ── -->
+          <g transform="translate(430, 90)">
+            <!-- main body -->
+            <rect x="0" y="30" width="140" height="240" rx="8"
+                  fill="url(#tank-grad-b)" stroke="rgba(0,212,255,0.5)" stroke-width="2"
+                  filter="url(#glow-blue)"/>
+            <!-- top dome -->
+            <ellipse cx="70" cy="30" rx="70" ry="18" fill="#1a2e58" stroke="rgba(0,212,255,0.5)" stroke-width="2"/>
+            <!-- bottom dome -->
+            <ellipse cx="70" cy="270" rx="70" ry="18" fill="#0d1e3a" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <!-- inner glow -->
+            <rect x="4" y="50" width="132" height="200" rx="6" fill="rgba(0,80,200,0.06)"/>
+            <!-- label -->
+            <text x="70" y="165" text-anchor="middle" fill="rgba(180,210,255,0.8)" font-size="13" font-weight="bold">反 应 塔</text>
+            <text x="70" y="182" text-anchor="middle" fill="rgba(120,160,220,0.6)" font-size="10">REACTOR</text>
+            <!-- level indicator -->
+            <rect x="130" y="32" width="6" height="236" rx="3" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="130" y="100" width="6" height="168" rx="3" fill="rgba(0,212,255,0.55)"/>
+            <!-- connectors -->
+            <circle cx="0" cy="120" r="5" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+            <circle cx="140" cy="120" r="5" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+          </g>
+
+          <!-- ── PUMP 1 (left section) ── -->
+          <g transform="translate(265, 200)">
+            <circle cx="18" cy="18" r="18" fill="#0a2040" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="12" fill="rgba(0,100,200,0.2)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <!-- spinner blades -->
+            <g class="pump-spin" style="transform-origin:18px 18px">
+              <line x1="18" y1="6" x2="18" y2="30" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <text x="18" y="46" text-anchor="middle" fill="rgba(120,180,255,0.7)" font-size="9">输送泵1</text>
+            <!-- status dot -->
+            <circle cx="30" cy="6" r="4" fill="#00ff88" class="point-pulse"/>
+          </g>
+
+          <!-- ── PUMP 2 (right section) ── -->
+          <g transform="translate(610, 200)">
+            <circle cx="18" cy="18" r="18" fill="#0a2040" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="12" fill="rgba(0,100,200,0.2)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <g class="pump-spin" style="transform-origin:18px 18px">
+              <line x1="18" y1="6" x2="18" y2="30" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <text x="18" y="46" text-anchor="middle" fill="rgba(120,180,255,0.7)" font-size="9">输送泵2</text>
+            <circle cx="30" cy="6" r="4" fill="#00ff88" class="point-pulse"/>
+          </g>
+
+          <!-- ── PUMP 3 (circulation) ── -->
+          <g transform="translate(610, 280)">
+            <circle cx="18" cy="18" r="18" fill="#0a2040" stroke="rgba(255,170,0,0.5)" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="12" fill="rgba(100,80,0,0.2)" stroke="rgba(255,170,0,0.3)" stroke-width="1"/>
+            <g class="pump-spin" style="transform-origin:18px 18px">
+              <line x1="18" y1="6" x2="18" y2="30" stroke="rgba(255,170,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(255,170,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <text x="18" y="46" text-anchor="middle" fill="rgba(255,200,80,0.7)" font-size="9">循环泵</text>
+            <circle cx="30" cy="6" r="4" fill="#ffaa00" class="point-alarm"/>
+          </g>
+
+          <!-- ── PUMP 4 (return) ── -->
+          <g transform="translate(265, 270)">
+            <circle cx="18" cy="18" r="18" fill="#0a2040" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="12" fill="rgba(0,100,200,0.2)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <g class="pump-spin" style="transform-origin:18px 18px">
+              <line x1="18" y1="6" x2="18" y2="30" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <text x="18" y="46" text-anchor="middle" fill="rgba(120,180,255,0.7)" font-size="9">回流泵</text>
+            <circle cx="30" cy="6" r="4" fill="#00ff88" class="point-pulse"/>
+          </g>
+
+          <!-- ── CHIMNEY (right) ── -->
+          <g transform="translate(870, 60)">
+            <!-- chimney body -->
+            <path d="M25,360 L10,0 L40,0 L55,360 Z" fill="url(#tank-grad-b)" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <!-- stripes -->
+            <rect x="10" y="80" width="35" height="18" fill="rgba(255,60,60,0.3)"/>
+            <rect x="10" y="160" width="35" height="18" fill="rgba(255,60,60,0.3)"/>
+            <rect x="10" y="240" width="35" height="18" fill="rgba(255,60,60,0.3)"/>
+            <!-- top smoke -->
+            <ellipse cx="25" cy="0" rx="20" ry="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+            <text x="25" y="390" text-anchor="middle" fill="rgba(120,160,220,0.6)" font-size="10">排放口</text>
+          </g>
+
+          <!-- ── MEASUREMENT POINTS ── -->
+          <!-- Point 1 — inlet -->
+          <circle cx="320" cy="220" r="7" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="2" class="point-pulse"/>
+          <text x="330" y="215" fill="rgba(120,200,160,0.8)" font-size="9">入口</text>
+
+          <!-- Point 2 — reactor inlet -->
+          <circle cx="430" cy="220" r="7" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="2" class="point-pulse"/>
+          <text x="440" y="215" fill="rgba(120,200,160,0.8)" font-size="9">进塔</text>
+
+          <!-- Point 3 — reactor outlet -->
+          <circle cx="570" cy="220" r="7" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="2" class="point-pulse"/>
+          <text x="580" y="215" fill="rgba(120,200,160,0.8)" font-size="9">出塔</text>
+
+          <!-- Point 4 — outlet ALARM -->
+          <circle cx="740" cy="220" r="7" fill="rgba(255,58,58,0.2)" stroke="#ff3a3a" stroke-width="2" class="point-alarm"/>
+          <text x="750" y="215" fill="rgba(255,100,100,0.8)" font-size="9">⚠ 出口</text>
+
+          <!-- Point 5 — drain -->
+          <circle cx="500" cy="400" r="6" fill="rgba(0,255,136,0.15)" stroke="#00ff88" stroke-width="1.5" class="point-pulse"/>
+
+          <!-- Point 6 — bypass -->
+          <circle cx="500" cy="150" r="6" fill="rgba(0,255,136,0.15)" stroke="#00ff88" stroke-width="1.5" class="point-pulse"/>
+
+          <!-- ── VALVE SYMBOLS ── -->
+          <g transform="translate(380, 213)">
+            <polygon points="0,0 14,7 0,14" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+            <polygon points="14,0 0,7 14,14" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+          </g>
+          <g transform="translate(545, 213)">
+            <polygon points="0,0 14,7 0,14" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+            <polygon points="14,0 0,7 14,14" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+          </g>
+          <g transform="translate(710, 213)">
+            <polygon points="0,0 14,7 0,14" fill="rgba(255,58,58,0.3)" stroke="rgba(255,58,58,0.5)" stroke-width="1"/>
+            <polygon points="14,0 0,7 14,14" fill="rgba(255,58,58,0.3)" stroke="rgba(255,58,58,0.5)" stroke-width="1"/>
+          </g>
+
+          <!-- ── PUMP READOUT BOXES ── -->
+          <!-- Pump 1 readout -->
+          <g transform="translate(228, 155)">
+            <rect width="110" height="52" rx="3" fill="rgba(4,14,40,0.88)" stroke="rgba(0,212,255,0.35)" stroke-width="1"/>
+            <text x="8" y="15" fill="rgba(120,170,220,0.8)" font-size="10">输送泵A</text>
+            <text x="8" y="28" fill="rgba(120,170,220,0.7)" font-size="9">输出值</text>
+            <text id="freq-out-1" x="95" y="28" text-anchor="end" fill="#00d4ff" font-size="10" font-family="monospace">55.17hz</text>
+            <text x="8" y="40" fill="rgba(120,170,220,0.7)" font-size="9">给定值</text>
+            <text x="95" y="40" text-anchor="end" fill="rgba(120,180,255,0.7)" font-size="10" font-family="monospace">0.00hz</text>
+            <text x="8" y="50" fill="rgba(120,170,220,0.7)" font-size="9">实际值</text>
+            <text id="freq-act-1" x="95" y="50" text-anchor="end" fill="#4da6ff" font-size="10" font-family="monospace">38.50hz</text>
+          </g>
+
+          <!-- Pump 2 readout -->
+          <g transform="translate(615, 155)">
+            <rect width="110" height="52" rx="3" fill="rgba(4,14,40,0.88)" stroke="rgba(0,212,255,0.35)" stroke-width="1"/>
+            <text x="8" y="15" fill="rgba(120,170,220,0.8)" font-size="10">输送泵B</text>
+            <text x="8" y="28" fill="rgba(120,170,220,0.7)" font-size="9">输出值</text>
+            <text id="freq-out-2" x="95" y="28" text-anchor="end" fill="#00d4ff" font-size="10" font-family="monospace">30.33hz</text>
+            <text x="8" y="40" fill="rgba(120,170,220,0.7)" font-size="9">给定值</text>
+            <text x="95" y="40" text-anchor="end" fill="rgba(120,180,255,0.7)" font-size="10" font-family="monospace">0.00hz</text>
+            <text x="8" y="50" fill="rgba(120,170,220,0.7)" font-size="9">实际值</text>
+            <text id="freq-act-2" x="95" y="50" text-anchor="end" fill="#4da6ff" font-size="10" font-family="monospace">38.50hz</text>
+          </g>
+
+          <!-- Pump 3 readout (circulation) -->
+          <g transform="translate(615, 340)">
+            <rect width="110" height="52" rx="3" fill="rgba(4,14,40,0.88)" stroke="rgba(255,170,0,0.35)" stroke-width="1"/>
+            <text x="8" y="15" fill="rgba(220,180,100,0.8)" font-size="10">循环泵</text>
+            <text x="8" y="28" fill="rgba(120,170,220,0.7)" font-size="9">输出值</text>
+            <text id="freq-out-3" x="95" y="28" text-anchor="end" fill="#ffaa00" font-size="10" font-family="monospace">28.33hz</text>
+            <text x="8" y="40" fill="rgba(120,170,220,0.7)" font-size="9">给定值</text>
+            <text x="95" y="40" text-anchor="end" fill="rgba(120,180,255,0.7)" font-size="10" font-family="monospace">0.00hz</text>
+            <text x="8" y="50" fill="rgba(120,170,220,0.7)" font-size="9">实际值</text>
+            <text id="freq-act-3" x="95" y="50" text-anchor="end" fill="#4da6ff" font-size="10" font-family="monospace">38.50hz</text>
+          </g>
+
+          <!-- Pump 4 readout (return) -->
+          <g transform="translate(225, 330)">
+            <rect width="110" height="52" rx="3" fill="rgba(4,14,40,0.88)" stroke="rgba(0,212,255,0.35)" stroke-width="1"/>
+            <text x="8" y="15" fill="rgba(120,170,220,0.8)" font-size="10">回流泵</text>
+            <text x="8" y="28" fill="rgba(120,170,220,0.7)" font-size="9">输出值</text>
+            <text id="freq-out-4" x="95" y="28" text-anchor="end" fill="#00d4ff" font-size="10" font-family="monospace">27.33hz</text>
+            <text x="8" y="40" fill="rgba(120,170,220,0.7)" font-size="9">给定值</text>
+            <text x="95" y="40" text-anchor="end" fill="rgba(120,180,255,0.7)" font-size="10" font-family="monospace">0.00hz</text>
+            <text x="8" y="50" fill="rgba(120,170,220,0.7)" font-size="9">实际值</text>
+            <text id="freq-act-4" x="95" y="50" text-anchor="end" fill="#4da6ff" font-size="10" font-family="monospace">38.50hz</text>
+          </g>
+
+          <!-- Flow / pressure readouts -->
+          <g transform="translate(730, 240)">
+            <rect width="100" height="30" rx="3" fill="rgba(4,14,40,0.8)" stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <text x="5" y="13" fill="rgba(120,170,220,0.7)" font-size="9">流量</text>
+            <text id="flow-val-1" x="95" y="13" text-anchor="end" fill="#00d4ff" font-size="11" font-family="monospace">38.50</text>
+            <text x="5" y="25" fill="rgba(120,170,220,0.7)" font-size="9">压力</text>
+            <text id="pres-val-1" x="95" y="25" text-anchor="end" fill="#4da6ff" font-size="11" font-family="monospace">100.0</text>
+          </g>
+
+          <g transform="translate(730, 290)">
+            <rect width="100" height="20" rx="3" fill="rgba(4,14,40,0.8)" stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <text x="5" y="13" fill="rgba(120,170,220,0.7)" font-size="9">流量</text>
+            <text id="flow-val-2" x="95" y="13" text-anchor="end" fill="#00d4ff" font-size="11" font-family="monospace">30.30</text>
+          </g>
+
+          <!-- Measurement labels near outlet -->
+          <text x="740" y="200" fill="rgba(255,100,100,0.7)" font-size="9">
+            出口浓度: <tspan id="outlet-conc" fill="#ff3a3a">异常</tspan>
+          </text>
+
+          <!-- Process A title -->
+          <text x="550" y="22" text-anchor="middle" fill="rgba(0,212,255,0.5)" font-size="11" letter-spacing="2">── 工艺控制系统 A ──</text>
+
+          <!-- Bottom labels -->
+          <text x="100" y="470" text-anchor="middle" fill="rgba(100,140,200,0.5)" font-size="9">储罐区</text>
+          <text x="500" y="470" text-anchor="middle" fill="rgba(100,140,200,0.5)" font-size="9">反应区</text>
+          <text x="870" y="470" text-anchor="middle" fill="rgba(100,140,200,0.5)" font-size="9">排放区</text>
+        </svg>
+      </div>
+
+      <!-- ────── PROCESS B SVG ────── -->
+      <div class="process-view" data-process="B">
+        <svg viewBox="0 0 1100 480" xmlns="http://www.w3.org/2000/svg"
+             style="width:100%;height:100%;background:transparent;">
+          <defs>
+            <linearGradient id="tank-grad-c" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a3060"/>
+              <stop offset="100%" style="stop-color:#0a1630"/>
+            </linearGradient>
+          </defs>
+
+          <!-- ── PIPES ── -->
+          <!-- Top supply pipe -->
+          <line x1="100" y1="130" x2="420" y2="130" stroke="#1a4a8a" stroke-width="7"/>
+          <line x1="100" y1="130" x2="420" y2="130" stroke="rgba(0,212,255,0.4)" stroke-width="2.5"
+                class="pipe-flow" stroke-linecap="round"/>
+
+          <!-- Main horizontal header -->
+          <line x1="420" y1="130" x2="750" y2="130" stroke="#1a4a8a" stroke-width="9"/>
+          <line x1="420" y1="130" x2="750" y2="130" stroke="rgba(0,212,255,0.45)" stroke-width="3"
+                class="pipe-flow" stroke-linecap="round"/>
+
+          <!-- Right section -->
+          <line x1="750" y1="130" x2="920" y2="130" stroke="#1a4a8a" stroke-width="7"/>
+          <line x1="750" y1="130" x2="920" y2="130" stroke="rgba(0,212,255,0.35)" stroke-width="2.5"
+                class="pipe-flow" stroke-linecap="round"/>
+
+          <!-- Bottom return from storage tanks -->
+          <line x1="120" y1="330" x2="120" y2="280" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="120" y1="280" x2="280" y2="280" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="280" y1="280" x2="280" y2="130" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="120" y1="280" x2="280" y2="280" stroke="rgba(0,150,255,0.3)" stroke-width="2" class="pipe-flow"/>
+          <line x1="280" y1="280" x2="280" y2="130" stroke="rgba(0,150,255,0.3)" stroke-width="2" class="pipe-flow"/>
+
+          <!-- Storage B tanks connection -->
+          <line x1="230" y1="330" x2="230" y2="280" stroke="#1a3a70" stroke-width="4"/>
+          <line x1="230" y1="280" x2="280" y2="280" stroke="#1a3a70" stroke-width="4"/>
+
+          <!-- Bottom drain -->
+          <line x1="600" y1="360" x2="600" y2="130" stroke="#0d2050" stroke-width="5"/>
+          <line x1="600" y1="360" x2="900" y2="360" stroke="#0d2050" stroke-width="5"/>
+          <line x1="600" y1="360" x2="600" y2="130" stroke="rgba(0,100,200,0.2)" stroke-width="2" class="pipe-flow-slow"/>
+
+          <!-- Bypass -->
+          <line x1="420" y1="130" x2="420" y2="250" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="420" y1="250" x2="600" y2="250" stroke="#1a3a70" stroke-width="5"/>
+          <line x1="420" y1="130" x2="420" y2="250" stroke="rgba(0,150,255,0.25)" stroke-width="2" class="pipe-flow-slow"/>
+          <line x1="420" y1="250" x2="600" y2="250" stroke="rgba(0,150,255,0.25)" stroke-width="2" class="pipe-flow"/>
+
+          <!-- ── MIXING TANK (top-left) ── -->
+          <g transform="translate(30, 50)">
+            <rect x="0" y="25" width="90" height="80" rx="5" fill="url(#tank-grad-c)"
+                  stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="45" cy="25" rx="45" ry="12" fill="#1a3060" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="45" cy="105" rx="45" ry="12" fill="#0d1e3a" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <rect x="2" y="40" width="86" height="50" rx="3" fill="rgba(0,80,180,0.12)"/>
+            <text x="45" y="73" text-anchor="middle" fill="rgba(180,210,255,0.9)" font-size="11">稀释水箱</text>
+            <rect x="84" y="27" width="4" height="76" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="84" y="55" width="4" height="48" rx="2" fill="rgba(0,212,255,0.55)"/>
+          </g>
+
+          <!-- ── STORAGE TANK A ── -->
+          <g transform="translate(105, 250)">
+            <rect x="0" y="20" width="80" height="80" rx="4" fill="url(#tank-grad-c)"
+                  stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="40" cy="20" rx="40" ry="10" fill="#1a3060" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="40" cy="100" rx="40" ry="10" fill="#0d1e3a" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <rect x="2" y="35" width="76" height="40" rx="2" fill="rgba(0,80,180,0.1)"/>
+            <text x="40" y="64" text-anchor="middle" fill="rgba(180,210,255,0.9)" font-size="11">储液罐A</text>
+            <rect x="74" y="22" width="4" height="76" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="74" y="50" width="4" height="48" rx="2" fill="rgba(0,212,255,0.45)"/>
+          </g>
+
+          <!-- ── STORAGE TANK B ── -->
+          <g transform="translate(215, 250)">
+            <rect x="0" y="20" width="80" height="80" rx="4" fill="url(#tank-grad-c)"
+                  stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="40" cy="20" rx="40" ry="10" fill="#1a3060" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"/>
+            <ellipse cx="40" cy="100" rx="40" ry="10" fill="#0d1e3a" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <rect x="2" y="35" width="76" height="40" rx="2" fill="rgba(0,80,180,0.1)"/>
+            <text x="40" y="64" text-anchor="middle" fill="rgba(180,210,255,0.9)" font-size="11">储液罐B</text>
+            <rect x="74" y="22" width="4" height="76" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="74" y="38" width="4" height="60" rx="2" fill="rgba(0,212,255,0.6)"/>
+          </g>
+
+          <!-- ── REACTOR VESSEL ── -->
+          <g transform="translate(550, 70)">
+            <rect x="0" y="25" width="100" height="200" rx="6"
+                  fill="url(#tank-grad-c)" stroke="rgba(0,212,255,0.5)" stroke-width="2"/>
+            <ellipse cx="50" cy="25" rx="50" ry="14" fill="#1a2e58" stroke="rgba(0,212,255,0.5)" stroke-width="2"/>
+            <ellipse cx="50" cy="225" rx="50" ry="14" fill="#0d1e3a" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <rect x="4" y="38" width="92" height="174" rx="4" fill="rgba(0,80,200,0.06)"/>
+            <text x="50" y="130" text-anchor="middle" fill="rgba(180,210,255,0.8)" font-size="12" font-weight="bold">处理塔</text>
+            <text x="50" y="145" text-anchor="middle" fill="rgba(120,160,220,0.6)" font-size="9">PROCESS</text>
+            <rect x="92" y="27" width="5" height="196" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <rect x="92" y="90" width="5" height="133" rx="2" fill="rgba(0,212,255,0.55)"/>
+            <circle cx="0" cy="90" r="5" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+            <circle cx="100" cy="90" r="5" fill="rgba(0,212,255,0.3)" stroke="rgba(0,212,255,0.6)" stroke-width="1"/>
+          </g>
+
+          <!-- ── CHIMNEY B ── -->
+          <g transform="translate(880, 50)">
+            <path d="M22,310 L8,0 L36,0 L50,310 Z" fill="url(#tank-grad-c)" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"/>
+            <rect x="8" y="70" width="30" height="15" fill="rgba(255,60,60,0.3)"/>
+            <rect x="8" y="140" width="30" height="15" fill="rgba(255,60,60,0.3)"/>
+            <rect x="8" y="210" width="30" height="15" fill="rgba(255,60,60,0.3)"/>
+            <text x="29" y="330" text-anchor="middle" fill="rgba(120,160,220,0.6)" font-size="10">排放口</text>
+          </g>
+
+          <!-- ── PUMP B1 ── -->
+          <g transform="translate(340, 112)">
+            <circle cx="18" cy="18" r="18" fill="#0a2040" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="12" fill="rgba(0,100,200,0.2)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <g class="pump-spin" style="transform-origin:18px 18px">
+              <line x1="18" y1="6" x2="18" y2="30" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <text x="18" y="46" text-anchor="middle" fill="rgba(120,180,255,0.7)" font-size="9">输液泵A</text>
+            <circle cx="30" cy="6" r="4" fill="#00ff88" class="point-pulse"/>
+          </g>
+
+          <!-- ── PUMP B2 ── -->
+          <g transform="translate(700, 112)">
+            <circle cx="18" cy="18" r="18" fill="#0a2040" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="12" fill="rgba(0,100,200,0.2)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <g class="pump-spin" style="transform-origin:18px 18px">
+              <line x1="18" y1="6" x2="18" y2="30" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(0,212,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <text x="18" y="46" text-anchor="middle" fill="rgba(120,180,255,0.7)" font-size="9">输液泵B</text>
+            <circle cx="30" cy="6" r="4" fill="#00ff88" class="point-pulse"/>
+          </g>
+
+          <!-- ── MEASUREMENT POINTS B ── -->
+          <circle cx="420" cy="130" r="7" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="2" class="point-pulse"/>
+          <circle cx="550" cy="130" r="7" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="2" class="point-pulse"/>
+          <circle cx="660" cy="130" r="7" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="2" class="point-pulse"/>
+          <circle cx="800" cy="130" r="7" fill="rgba(255,58,58,0.2)" stroke="#ff3a3a" stroke-width="2" class="point-alarm"/>
+
+          <!-- ── PUMP B1 READOUT ── -->
+          <g transform="translate(280, 75)">
+            <rect width="110" height="52" rx="3" fill="rgba(4,14,40,0.88)" stroke="rgba(0,212,255,0.35)" stroke-width="1"/>
+            <text x="8" y="15" fill="rgba(120,170,220,0.8)" font-size="10">输液泵A</text>
+            <text x="8" y="28" fill="rgba(120,170,220,0.7)" font-size="9">输出值</text>
+            <text id="b-freq-out-1" x="95" y="28" text-anchor="end" fill="#00d4ff" font-size="10" font-family="monospace">30.33hz</text>
+            <text x="8" y="40" fill="rgba(120,170,220,0.7)" font-size="9">给定值</text>
+            <text x="95" y="40" text-anchor="end" fill="rgba(120,180,255,0.7)" font-size="10" font-family="monospace">0.00hz</text>
+            <text x="8" y="50" fill="rgba(120,170,220,0.7)" font-size="9">实际值</text>
+            <text id="b-freq-act-1" x="95" y="50" text-anchor="end" fill="#4da6ff" font-size="10" font-family="monospace">38.50hz</text>
+          </g>
+
+          <!-- ── PUMP B2 READOUT ── -->
+          <g transform="translate(645, 75)">
+            <rect width="110" height="52" rx="3" fill="rgba(4,14,40,0.88)" stroke="rgba(0,212,255,0.35)" stroke-width="1"/>
+            <text x="8" y="15" fill="rgba(120,170,220,0.8)" font-size="10">输液泵B</text>
+            <text x="8" y="28" fill="rgba(120,170,220,0.7)" font-size="9">输出值</text>
+            <text id="b-freq-out-2" x="95" y="28" text-anchor="end" fill="#00d4ff" font-size="10" font-family="monospace">27.20hz</text>
+            <text x="8" y="40" fill="rgba(120,170,220,0.7)" font-size="9">给定值</text>
+            <text x="95" y="40" text-anchor="end" fill="rgba(120,180,255,0.7)" font-size="10" font-family="monospace">0.00hz</text>
+            <text x="8" y="50" fill="rgba(120,170,220,0.7)" font-size="9">实际值</text>
+            <text id="b-freq-act-2" x="95" y="50" text-anchor="end" fill="#4da6ff" font-size="10" font-family="monospace">38.50hz</text>
+          </g>
+
+          <!-- ── FLOW / PRESSURE READOUTS B ── -->
+          <g transform="translate(800, 150)">
+            <rect width="100" height="30" rx="3" fill="rgba(4,14,40,0.8)" stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <text x="5" y="13" fill="rgba(120,170,220,0.7)" font-size="9">流量</text>
+            <text id="b-flow-val-1" x="95" y="13" text-anchor="end" fill="#00d4ff" font-size="11" font-family="monospace">38.50</text>
+            <text x="5" y="25" fill="rgba(120,170,220,0.7)" font-size="9">压力</text>
+            <text id="b-pres-val-1" x="95" y="25" text-anchor="end" fill="#4da6ff" font-size="11" font-family="monospace">38.50</text>
+          </g>
+          <g transform="translate(800, 200)">
+            <rect width="100" height="20" rx="3" fill="rgba(4,14,40,0.8)" stroke="rgba(0,212,255,0.25)" stroke-width="1"/>
+            <text x="5" y="14" fill="rgba(120,170,220,0.7)" font-size="9">压力</text>
+            <text id="b-pres-val-2" x="95" y="14" text-anchor="end" fill="#4da6ff" font-size="11" font-family="monospace">38.50</text>
+          </g>
+
+          <!-- Process B title -->
+          <text x="550" y="22" text-anchor="middle" fill="rgba(0,212,255,0.5)" font-size="11" letter-spacing="2">── 工艺控制系统 B ──</text>
+          <text x="100" y="470" text-anchor="middle" fill="rgba(100,140,200,0.5)" font-size="9">储罐区</text>
+          <text x="600" y="470" text-anchor="middle" fill="rgba(100,140,200,0.5)" font-size="9">处理区</text>
+          <text x="900" y="470" text-anchor="middle" fill="rgba(100,140,200,0.5)" font-size="9">排放区</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════ PARAM PANEL ════════════════════ -->
+    <div class="param-panel">
+      <div class="param-box bracket-full">
+        <div class="param-box-title"><i class="fa-solid fa-sliders" style="margin-right:5px;"></i>参数监控面板</div>
+        <div class="param-grid">
+          <div class="param-item">
+            <span class="param-label">出口参数设定</span>
+            <span class="param-value" id="pp-setpoint">40.0</span>
+          </div>
+          <div class="param-item">
+            <span class="param-label">出口参数目标值</span>
+            <span class="param-value" id="pp-target">100.00</span>
+          </div>
+          <div class="param-item">
+            <span class="param-label">出口参数瞬时值</span>
+            <span class="param-value" id="pp-instant">100.00</span>
+          </div>
+          <div class="param-item">
+            <span class="param-label">出口参数预测值</span>
+            <span class="param-value warn" id="pp-predict">11.50</span>
+          </div>
+          <div class="param-item">
+            <span class="param-label">参数A预警上限</span>
+            <span class="param-value" id="pp-limitA">49.32</span>
+          </div>
+          <div class="param-item">
+            <span class="param-label">参数B预警上限</span>
+            <span class="param-value" id="pp-limitB">49.36</span>
+          </div>
+        </div>
+        <div class="param-row-full" style="margin-top:8px;">
+          <span class="param-label">出口参数总量</span>
+          <span class="param-value" id="pp-total" style="font-size:16px;">38.50</span>
+        </div>
+        <div class="param-row-full" style="margin-top:6px;">
+          <span class="param-label" style="font-size:10px;color:var(--text-muted);">设定值调整</span>
+          <input type="number" class="param-setpoint" value="40.0" step="0.5" title="调整设定值">
+          <button class="btn-confirm" style="font-size:11px;padding:2px 8px;">确定</button>
+        </div>
+      </div>
+
+      <div class="param-box bracket-full" style="margin-top:10px;">
+        <div class="param-box-title"><i class="fa-solid fa-chart-line" style="margin-right:5px;"></i>系统状态</div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:11px;">
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-muted);">数据更新频率</span>
+            <span style="color:var(--safe);">2.5s</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-muted);">模型响应时间</span>
+            <span style="color:var(--cyan);">487ms</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-muted);">当前模型版本</span>
+            <span style="color:var(--cyan);">V11</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-muted);">预测精度(RMSE)</span>
+            <span style="color:var(--safe);">1.24</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-muted);">告警数(今日)</span>
+            <span style="color:var(--alarm);">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ BOTTOM NAV ════════════════════ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="openModal('modal-data')">
+      <i class="fa-solid fa-chart-area"></i>
+      <span>数据分析</span>
+    </button>
+    <button class="nav-btn" onclick="openModal('modal-model')">
+      <i class="fa-solid fa-brain"></i>
+      <span>模型分析</span>
+    </button>
+    <button class="nav-btn has-alarm" onclick="openModal('modal-alarm')">
+      <i class="fa-solid fa-bell"></i>
+      <span>告警管理</span>
+    </button>
+    <button class="nav-btn" onclick="openModal('modal-log')">
+      <i class="fa-solid fa-clipboard-list"></i>
+      <span>控制日志</span>
+    </button>
+  </nav>
+
+</div><!-- /#app -->
+
+<!-- ════════════════════ MODAL: DATA ANALYSIS ════════════════════ -->
+<div class="modal-overlay" id="modal-data">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-deco"><span></span><span></span><span></span></div>
+        数据分析
+        <div class="modal-title-deco" style="transform:scaleX(-1)"><span></span><span></span><span></span></div>
+      </div>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <div class="modal-tab active" data-modal="data" data-tab-id="model-analysis"
+             onclick="switchModalTab('data','model-analysis')">
+          <i class="fa-solid fa-wave-square"></i> 模型分析
+        </div>
+        <div class="modal-tab" data-modal="data" data-tab-id="benchmark"
+             onclick="switchModalTab('data','benchmark')">
+          <i class="fa-solid fa-chart-simple"></i> 对标阶分析
+        </div>
+      </div>
+
+      <!-- TAB: Model Analysis -->
+      <div class="tab-panel active" data-modal="data" data-panel-id="model-analysis">
+        <div class="filter-bar">
+          <div class="select-wrapper">
+            <select class="ctrl-select" id="da-unit">
+              <option value="1">1#机组</option>
+              <option value="2">2#机组</option>
+              <option value="3" selected>3#机组</option>
+            </select>
+          </div>
+          <input type="date" class="ctrl-date" id="da-date" value="2026-04-30">
+          <button class="btn-primary" onclick="doQuery('model')">查 询</button>
+        </div>
+
+        <div class="chart-area" style="position:relative;">
+          <div class="loading-overlay" id="loading-model">
+            <div class="spinner"></div>
+          </div>
+          <div class="charts-col">
+            <div class="chart-card">
+              <div class="chart-card-label">出口参数1浓度 (mg/m³)</div>
+              <div class="chart-instance" id="chart-param1"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-label">出口参数2浓度 (mg/m³)</div>
+              <div class="chart-instance" id="chart-param2"></div>
+            </div>
+          </div>
+          <div class="metrics-col">
+            <div class="metric-legend">
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#00d4ff;"></span>
+                <span>出口参数1实时值</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dash" style="border-top-color:#a855f7;"></span>
+                <span>出口参数1预测值</span>
+              </div>
+            </div>
+            <div class="metrics-block">
+              <div class="metrics-block-title">■ 评价指标(参数1)</div>
+              <div class="metric-row"><span class="metric-name">RMSE</span><span class="metric-val" id="rmse-val">—</span></div>
+              <div class="metric-row"><span class="metric-name">MAE</span><span class="metric-val" id="mae-val">—</span></div>
+            </div>
+            <div class="metric-legend">
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#00d4ff;"></span>
+                <span>出口参数2实时值</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dash" style="border-top-color:#a855f7;"></span>
+                <span>出口参数2预测值</span>
+              </div>
+            </div>
+            <div class="metrics-block">
+              <div class="metrics-block-title">■ 评价指标(参数2)</div>
+              <div class="metric-row"><span class="metric-name">RMSE</span><span class="metric-val" id="rmse-val2">—</span></div>
+              <div class="metric-row"><span class="metric-name">MAE</span><span class="metric-val" id="mae-val2">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Benchmark Analysis -->
+      <div class="tab-panel" data-modal="data" data-panel-id="benchmark">
+        <div class="filter-bar">
+          <div class="select-wrapper">
+            <select class="ctrl-select" id="bm-unit">
+              <option value="1">1#机组</option>
+              <option value="2">2#机组</option>
+              <option value="3" selected>3#机组</option>
+            </select>
+          </div>
+          <div class="select-wrapper">
+            <select class="ctrl-select" id="bm-process">
+              <option>工艺流程A</option>
+              <option>工艺流程B</option>
+            </select>
+          </div>
+          <div class="select-wrapper">
+            <select class="ctrl-select" id="benchmark-param" style="min-width:180px;"
+                    onchange="renderBenchmarkChart(this.value)">
+              <option>总排放量当前小时均值</option>
+              <option>出口烟气参数1折算值</option>
+              <option>出口烟气参数1含量</option>
+              <option>出口烟气参数2含量</option>
+              <option>出口烟气参数2折算值</option>
+              <option>出口烟气流量</option>
+              <option>监测点位A均值</option>
+              <option>监测点位B均值</option>
+            </select>
+          </div>
+          <input type="date" class="ctrl-date" id="bm-date" value="2026-04-30">
+          <button class="btn-primary" onclick="doQuery('benchmark')">查 询</button>
+        </div>
+
+        <div class="single-chart-area" style="position:relative;">
+          <div class="loading-overlay" id="loading-benchmark">
+            <div class="spinner"></div>
+          </div>
+          <div class="single-chart-card">
+            <div class="chart-card-label" id="bm-chart-label">总排放量当前小时均值</div>
+            <div class="single-chart-instance" id="chart-benchmark"></div>
+            <div class="point-info-box">
+              <div class="point-time" id="point-time">—</div>
+              <div><span class="point-dot"></span><span class="point-val" id="point-val">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL: MODEL ANALYSIS ════════════════════ -->
+<div class="modal-overlay" id="modal-model">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-deco"><span></span><span></span><span></span></div>
+        模型分析
+        <div class="modal-title-deco" style="transform:scaleX(-1)"><span></span><span></span><span></span></div>
+      </div>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="model-stats-row">
+        <div class="stat-card bracket-full">
+          <div class="stat-card-icon"><i class="fa-solid fa-code-branch"></i></div>
+          <div class="stat-card-val">V11</div>
+          <div class="stat-card-label">当前模型版本</div>
+        </div>
+        <div class="stat-card bracket-full">
+          <div class="stat-card-icon"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="stat-card-val">1.24</div>
+          <div class="stat-card-label">模型精度 (RMSE)</div>
+        </div>
+        <div class="stat-card bracket-full">
+          <div class="stat-card-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="stat-card-val">487<span style="font-size:14px;">ms</span></div>
+          <div class="stat-card-label">平均响应时间</div>
+        </div>
+        <div class="stat-card bracket-full">
+          <div class="stat-card-icon"><i class="fa-solid fa-database"></i></div>
+          <div class="stat-card-val">128,463</div>
+          <div class="stat-card-label">训练数据量 (条)</div>
+        </div>
+      </div>
+
+      <div class="model-content">
+        <div class="model-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>版本</th>
+                <th>训练时间</th>
+                <th>RMSE</th>
+                <th>MAE</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody id="model-tbody"></tbody>
+          </table>
+        </div>
+        <div class="model-chart-wrap">
+          <div class="model-chart-label">各版本模型误差对比 (RMSE / MAE)</div>
+          <div class="model-chart-instance" id="chart-model-rmse"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL: ALARM MANAGEMENT ════════════════════ -->
+<div class="modal-overlay" id="modal-alarm">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-deco"><span></span><span></span><span></span></div>
+        告警管理
+        <div class="modal-title-deco" style="transform:scaleX(-1)"><span></span><span></span><span></span></div>
+      </div>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="filter-bar">
+        <span class="filter-label">选择车间:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="al-unit">
+            <option>1#机组</option>
+            <option>2#机组</option>
+            <option selected>3#机组</option>
+          </select>
+        </div>
+        <span class="filter-label">工序:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="al-process">
+            <option>工艺流程A</option>
+            <option>工艺流程B</option>
+          </select>
+        </div>
+        <span class="filter-label">告警点位:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="al-point">
+            <option value="">请选择</option>
+            <option>SC.process.P01_CT602</option>
+            <option>SC.3TX.C_FT_102_1BC</option>
+            <option>DATA_MAN31MCS03</option>
+            <option>SC.process.P02_FT201</option>
+          </select>
+        </div>
+        <span class="filter-label">告警类别:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="al-type">
+            <option value="">请选择</option>
+            <option>离线</option>
+            <option>超限</option>
+            <option>数据异常</option>
+            <option>通信故障</option>
+          </select>
+        </div>
+        <span class="filter-label">选择日期:</span>
+        <input type="date" class="ctrl-date" id="al-date">
+        <button class="btn-primary" onclick="doQuery('alarm')">查 询</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">序号</th>
+              <th style="width:90px;">告警类别</th>
+              <th style="width:160px;">告警时间</th>
+              <th>告警点位</th>
+              <th>详细描述</th>
+              <th style="width:160px;">恢复时间</th>
+            </tr>
+          </thead>
+          <tbody id="alarm-tbody"></tbody>
+        </table>
+      </div>
+      <div id="alarm-pg" class="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL: CONTROL LOG ════════════════════ -->
+<div class="modal-overlay" id="modal-log">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-deco"><span></span><span></span><span></span></div>
+        控制日志
+        <div class="modal-title-deco" style="transform:scaleX(-1)"><span></span><span></span><span></span></div>
+      </div>
+      <button class="modal-close" onclick="closeAllModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="filter-bar">
+        <span class="filter-label">选择车间:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="lg-unit">
+            <option>1#机组</option>
+            <option>2#机组</option>
+            <option selected>3#机组</option>
+          </select>
+        </div>
+        <span class="filter-label">工序:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="lg-process">
+            <option value="">请选择</option>
+            <option>工艺流程A</option>
+            <option>工艺流程B</option>
+          </select>
+        </div>
+        <span class="filter-label">告警点位:</span>
+        <div class="select-wrapper">
+          <select class="ctrl-select" id="lg-point">
+            <option value="">请选择</option>
+            <option>SC.process.P01_CT602</option>
+            <option>DATA_MAN31MCS03</option>
+          </select>
+        </div>
+        <span class="filter-label">选择日期:</span>
+        <input type="date" class="ctrl-date" id="lg-date">
+        <button class="btn-primary" onclick="doQuery('log')">查 询</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">序号</th>
+              <th>开启工序/设备名称</th>
+              <th style="width:160px;">开启时间</th>
+              <th style="width:160px;">结束时间</th>
+              <th style="width:80px;">总耗时</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+      </div>
+      <div id="log-pg" class="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

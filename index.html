@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智慧工务巡检作业管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { background: var(--bg); }
+    #login-page { background: var(--bg); }
+  </style>
+</head>
+<body class="tech-grid">
+  <div id="login-page">
+    <canvas id="login-canvas"></canvas>
+
+    <div class="login-card bracket-full">
+      <div class="login-logo">
+        <div class="logo-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="login-title">智慧工务巡检<br>作业管理系统</div>
+        <div class="login-subtitle">Smart Works Inspection Management System</div>
+      </div>
+
+      <form class="login-form" onsubmit="doLogin(event)">
+        <div class="form-field">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="username" placeholder="请输入用户名" value="admin" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="password" placeholder="请输入密码" value="123456" autocomplete="off">
+        </div>
+        <button type="submit" class="btn-login">登&nbsp;&nbsp;录</button>
+      </form>
+
+      <div class="login-tip">演示系统 · 任意账号密码均可登录</div>
+    </div>
+  </div>
+
+  <script>
+    /* ── Particle canvas ── */
+    (function () {
+      const canvas = document.getElementById('login-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles = [];
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      function mkParticle() {
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 1.5 + 0.5,
+          a: Math.random() * 0.6 + 0.2
+        };
+      }
+
+      function init() {
+        resize();
+        particles = Array.from({ length: 120 }, mkParticle);
+        window.addEventListener('resize', resize);
+        requestAnimationFrame(loop);
+      }
+
+      function loop() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw connections
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const p = particles[i], q = particles[j];
+            const d = Math.hypot(p.x - q.x, p.y - q.y);
+            if (d < 110) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(q.x, q.y);
+              ctx.strokeStyle = `rgba(0,212,255,${0.12 * (1 - d / 110)})`;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw particles
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0,212,255,${p.a})`;
+          ctx.fill();
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+        });
+
+        requestAnimationFrame(loop);
+      }
+
+      init();
+    })();
+
+    function doLogin(e) {
+      e.preventDefault();
+      const btn = document.querySelector('.btn-login');
+      btn.textContent = '登录中...';
+      btn.disabled = true;
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 600);
+    }
+  </script>
+</body>
+</html>
