@@ -10,8 +10,12 @@
     body { background: var(--bg); }
     #login-page { background: var(--bg); }
   </style>
+  <script>(function(){var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})()</script>
 </head>
 <body class="tech-grid">
+  <button class="theme-toggle" onclick="toggleTheme()" title="切换主题" style="position:fixed;top:12px;right:16px;z-index:10;">
+    <i class="fa-solid fa-circle-half-stroke"></i>
+  </button>
   <div id="login-page">
     <canvas id="login-canvas"></canvas>
 
@@ -115,6 +119,14 @@
       setTimeout(() => {
         window.location.href = 'dashboard.html';
       }, 600);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = (html.getAttribute('data-theme') || 'dark') === 'dark' ? 'light' : 'dark';
+      if (next === 'dark') html.removeAttribute('data-theme');
+      else html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
     }
   </script>
 </body>

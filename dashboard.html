@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script>(function(){var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})()</script>
 </head>
 <body class="tech-grid">
 <div id="app">
@@ -36,6 +37,9 @@
       <span>管理员</span>
       <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
     </div>
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="切换主题">
+      <i class="fa-solid fa-circle-half-stroke"></i>
+    </button>
   </header>
 
   <!-- ════════════════════ SUB-NAV ════════════════════ -->
@@ -592,8 +596,8 @@
         </div>
         <div class="param-row-full" style="margin-top:6px;">
           <span class="param-label" style="font-size:10px;color:var(--text-muted);">设定值调整</span>
-          <input type="number" class="param-setpoint" value="40.0" step="0.5" title="调整设定值">
-          <button class="btn-confirm" style="font-size:11px;padding:2px 8px;">确定</button>
+          <input type="number" class="param-setpoint" id="param-setpoint-input" value="40.0" step="0.5" title="调整设定值">
+          <button class="btn-confirm" id="btn-confirm-setpoint" onclick="confirmSetpoint()" style="font-size:11px;padding:2px 8px;">确定</button>
         </div>
       </div>
 
@@ -643,6 +647,10 @@
       <i class="fa-solid fa-clipboard-list"></i>
       <span>控制日志</span>
     </button>
+    <button class="nav-btn" onclick="openModal('modal-config')">
+      <i class="fa-solid fa-cogs"></i>
+      <span>作业配置</span>
+    </button>
   </nav>
 
 </div><!-- /#app -->
@@ -675,7 +683,7 @@
       <div class="tab-panel active" data-modal="data" data-panel-id="model-analysis">
         <div class="filter-bar">
           <div class="select-wrapper">
-            <select class="ctrl-select" id="da-unit">
+            <select class="ctrl-select" id="da-unit" onchange="doQuery('model')">
               <option value="1">1#机组</option>
               <option value="2">2#机组</option>
               <option value="3" selected>3#机组</option>
@@ -738,16 +746,16 @@
       <div class="tab-panel" data-modal="data" data-panel-id="benchmark">
         <div class="filter-bar">
           <div class="select-wrapper">
-            <select class="ctrl-select" id="bm-unit">
+            <select class="ctrl-select" id="bm-unit" onchange="doQuery('benchmark')">
               <option value="1">1#机组</option>
               <option value="2">2#机组</option>
               <option value="3" selected>3#机组</option>
             </select>
           </div>
           <div class="select-wrapper">
-            <select class="ctrl-select" id="bm-process">
-              <option>工艺流程A</option>
-              <option>工艺流程B</option>
+            <select class="ctrl-select" id="bm-process" onchange="doQuery('benchmark')">
+              <option value="工艺流程A">工艺流程A</option>
+              <option value="工艺流程B">工艺流程B</option>
             </select>
           </div>
           <div class="select-wrapper">
@@ -860,16 +868,18 @@
         <span class="filter-label">选择车间:</span>
         <div class="select-wrapper">
           <select class="ctrl-select" id="al-unit">
-            <option>1#机组</option>
-            <option>2#机组</option>
-            <option selected>3#机组</option>
+            <option value="">全部机组</option>
+            <option value="1">1#机组</option>
+            <option value="2">2#机组</option>
+            <option value="3">3#机组</option>
           </select>
         </div>
         <span class="filter-label">工序:</span>
         <div class="select-wrapper">
           <select class="ctrl-select" id="al-process">
-            <option>工艺流程A</option>
-            <option>工艺流程B</option>
+            <option value="">全部流程</option>
+            <option value="A">工艺流程A</option>
+            <option value="B">工艺流程B</option>
           </select>
         </div>
         <span class="filter-label">告警点位:</span>
@@ -933,17 +943,18 @@
         <span class="filter-label">选择车间:</span>
         <div class="select-wrapper">
           <select class="ctrl-select" id="lg-unit">
-            <option>1#机组</option>
-            <option>2#机组</option>
-            <option selected>3#机组</option>
+            <option value="">全部机组</option>
+            <option value="1">1#机组</option>
+            <option value="2">2#机组</option>
+            <option value="3">3#机组</option>
           </select>
         </div>
         <span class="filter-label">工序:</span>
         <div class="select-wrapper">
           <select class="ctrl-select" id="lg-process">
-            <option value="">请选择</option>
-            <option>工艺流程A</option>
-            <option>工艺流程B</option>
+            <option value="">全部流程</option>
+            <option value="A">工艺流程A</option>
+            <option value="B">工艺流程B</option>
           </select>
         </div>
         <span class="filter-label">告警点位:</span>
@@ -977,6 +988,141 @@
     </div>
   </div>
 </div>
+
+<!-- ════════════════════ MODAL: 作业配置 ════════════════════ -->
+<div class="modal-overlay" id="modal-config">
+  <div class="modal-window" style="width:92vw;max-width:1200px;">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-cogs" style="margin-right:8px;"></i>作业管理配置</span>
+      <button class="modal-close" onclick="closeModal('modal-config')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="flex-direction:row;overflow:hidden;padding:0;height:72vh;">
+
+      <!-- ── 左侧边栏 ── -->
+      <div class="config-sidebar">
+        <div class="config-sidebar-header">
+          <span>工艺流程列表</span>
+          <button class="config-add-btn" onclick="addConfigProcess()"><i class="fa-solid fa-plus"></i> 新建</button>
+        </div>
+        <div class="config-sidebar-filter">
+          <select class="ctrl-select" id="cfg-filter-unit" onchange="renderConfigSidebar()" style="width:100%;font-size:12px;">
+            <option value="">全部机组</option>
+            <option value="1">1#机组</option>
+            <option value="2">2#机组</option>
+            <option value="3">3#机组</option>
+          </select>
+        </div>
+        <div class="config-process-list" id="config-process-list"></div>
+      </div>
+
+      <!-- ── 右侧主区域 ── -->
+      <div class="config-main">
+        <div class="config-tabs-bar">
+          <div class="config-tabs">
+            <button class="config-tab active" data-tab="cfg-basic" onclick="switchCfgTab(this,'cfg-basic')">基本信息</button>
+            <button class="config-tab" data-tab="cfg-threshold" onclick="switchCfgTab(this,'cfg-threshold')">参数阈值</button>
+            <button class="config-tab" data-tab="cfg-points" onclick="switchCfgTab(this,'cfg-points')">巡检点位</button>
+            <button class="config-tab" data-tab="cfg-devices" onclick="switchCfgTab(this,'cfg-devices')">设备配置</button>
+          </div>
+          <div class="config-save-area">
+            <button class="btn-primary" id="cfg-save-btn" onclick="saveConfigProcess()" style="font-size:12px;padding:4px 16px;">保 存</button>
+          </div>
+        </div>
+
+        <!-- ── 基本信息 ── -->
+        <div class="config-form-scroll cfg-panel active" id="cfg-basic">
+          <div class="config-form-grid" id="cfg-basic-grid">
+            <div class="cfg-field">
+              <label class="cfg-label">流程编号</label>
+              <input class="cfg-input" id="cfg-code" type="text">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">工艺类型</label>
+              <input class="cfg-input" id="cfg-type" type="text">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">负责人</label>
+              <input class="cfg-input" id="cfg-responsible" type="text">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">联系电话</label>
+              <input class="cfg-input" id="cfg-contact" type="text">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">所属机组</label>
+              <input class="cfg-input" id="cfg-unit-disp" type="text" disabled>
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">位置</label>
+              <input class="cfg-input" id="cfg-location" type="text">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">启用日期</label>
+              <input class="cfg-input" id="cfg-start-date" type="date">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">运行状态</label>
+              <input class="cfg-input" id="cfg-status-disp" type="text" disabled>
+            </div>
+            <div class="cfg-field" style="grid-column:1/-1;">
+              <label class="cfg-label">备注</label>
+              <textarea class="cfg-textarea" id="cfg-remark" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 参数阈值 ── -->
+        <div class="config-form-scroll cfg-panel" id="cfg-threshold">
+          <div class="cfg-table-toolbar">
+            <span class="cfg-section-title">参数阈值配置</span>
+            <button class="config-add-btn" onclick="addThresholdRow()"><i class="fa-solid fa-plus"></i> 添加行</button>
+          </div>
+          <table class="data-table" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>参数名称</th><th>单位</th><th>低限</th><th>高限</th><th>预警低限</th><th>预警高限</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="threshold-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- ── 巡检点位 ── -->
+        <div class="config-form-scroll cfg-panel" id="cfg-points">
+          <div class="cfg-table-toolbar">
+            <span class="cfg-section-title">巡检点位管理</span>
+            <button class="config-add-btn" onclick="addInspectPointRow()"><i class="fa-solid fa-plus"></i> 添加行</button>
+          </div>
+          <table class="data-table" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>点位名称</th><th>位号</th><th>巡检间隔(min)</th><th>最后巡检</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="inspect-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- ── 设备配置 ── -->
+        <div class="config-form-scroll cfg-panel" id="cfg-devices">
+          <div class="cfg-table-toolbar">
+            <span class="cfg-section-title">设备配置管理</span>
+            <button class="config-add-btn" onclick="addDeviceRow()"><i class="fa-solid fa-plus"></i> 添加行</button>
+          </div>
+          <table class="data-table" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>设备名称</th><th>类型</th><th>规格型号</th><th>状态</th><th>最后维保</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="devices-tbody"></tbody>
+          </table>
+        </div>
+
+      </div><!-- /.config-main -->
+    </div><!-- /.modal-body -->
+  </div><!-- /.modal-window -->
+</div><!-- /.modal-overlay#modal-config -->
 
 <script src="js/data.js"></script>
 <script src="js/charts.js"></script>

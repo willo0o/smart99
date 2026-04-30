@@ -4,25 +4,58 @@
 
 'use strict';
 
-/* Shared theme overrides */
-const CHART_THEME = {
-  backgroundColor: 'transparent',
-  textStyle: { color: 'rgba(180,210,255,0.7)', fontFamily: "'Microsoft YaHei', Arial, sans-serif" }
-};
+/* ── Theme-aware style helpers ── */
+function isLight() {
+  return document.documentElement.getAttribute('data-theme') === 'light';
+}
 
-const AXIS_STYLE = {
-  axisLine:  { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
-  axisTick:  { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
-  axisLabel: { color: 'rgba(180,210,255,0.65)', fontSize: 10 },
-  splitLine: { lineStyle: { color: 'rgba(0,212,255,0.08)', type: 'dashed' } }
-};
+function getChartTheme() {
+  return {
+    backgroundColor: 'transparent',
+    textStyle: {
+      color: isLight() ? 'rgba(40,80,140,0.75)' : 'rgba(180,210,255,0.7)',
+      fontFamily: "'Microsoft YaHei', Arial, sans-serif"
+    }
+  };
+}
 
-const TOOLTIP_STYLE = {
-  backgroundColor: 'rgba(4,14,40,0.92)',
-  borderColor: 'rgba(0,212,255,0.35)',
-  borderWidth: 1,
-  textStyle: { color: '#e0f0ff', fontSize: 12 }
-};
+function getAxisStyle() {
+  if (isLight()) {
+    return {
+      axisLine:  { lineStyle: { color: 'rgba(0,90,180,0.22)' } },
+      axisTick:  { lineStyle: { color: 'rgba(0,90,180,0.22)' } },
+      axisLabel: { color: 'rgba(40,80,140,0.70)', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,90,180,0.09)', type: 'dashed' } }
+    };
+  }
+  return {
+    axisLine:  { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+    axisTick:  { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+    axisLabel: { color: 'rgba(180,210,255,0.65)', fontSize: 10 },
+    splitLine: { lineStyle: { color: 'rgba(0,212,255,0.08)', type: 'dashed' } }
+  };
+}
+
+function getTooltipStyle() {
+  if (isLight()) {
+    return {
+      backgroundColor: 'rgba(240,246,255,0.97)',
+      borderColor: 'rgba(0,90,180,0.30)',
+      borderWidth: 1,
+      textStyle: { color: '#1a2740', fontSize: 12 }
+    };
+  }
+  return {
+    backgroundColor: 'rgba(4,14,40,0.92)',
+    borderColor: 'rgba(0,212,255,0.35)',
+    borderWidth: 1,
+    textStyle: { color: '#e0f0ff', fontSize: 12 }
+  };
+}
+
+function getLegendTextStyle() {
+  return { color: isLight() ? 'rgba(40,80,140,0.75)' : 'rgba(180,210,255,0.7)', fontSize: 11 };
+}
 
 /* ── Chart instances registry ── */
 const Charts = {};
@@ -46,7 +79,6 @@ function renderModelAnalysisCharts(unit) {
   renderLineChart('chart-param1', d1, '出口参数1浓度 (mg/m³)');
   renderLineChart('chart-param2', d2, '出口参数2浓度 (mg/m³)');
 
-  // Update metrics
   const rmse1 = (1.1 + Math.random() * 0.5).toFixed(2);
   const mae1  = (0.7 + Math.random() * 0.4).toFixed(2);
   const rmse2 = (1.2 + Math.random() * 0.6).toFixed(2);
@@ -61,15 +93,13 @@ function renderLineChart(domId, data, label) {
   const chart = initOrGet(domId);
   if (!chart) return;
 
-  // Downsample for x-axis labels
-  const step = Math.ceil(data.times.length / 18);
-  const xLabels = data.times.filter((_, i) => i % step === 0);
+  const AS = getAxisStyle();
 
   chart.setOption({
-    ...CHART_THEME,
+    ...getChartTheme(),
     grid: { top: 12, right: 12, bottom: 28, left: 46 },
     tooltip: {
-      ...TOOLTIP_STYLE,
+      ...getTooltipStyle(),
       trigger: 'axis',
       formatter: function (params) {
         let s = `<b>${params[0].axisValue}</b><br/>`;
@@ -84,9 +114,9 @@ function renderLineChart(domId, data, label) {
     xAxis: {
       type: 'category',
       data: data.times,
-      ...AXIS_STYLE,
+      ...AS,
       axisLabel: {
-        ...AXIS_STYLE.axisLabel,
+        ...AS.axisLabel,
         interval: Math.ceil(data.times.length / 14) - 1,
         rotate: 0
       }
@@ -96,7 +126,7 @@ function renderLineChart(domId, data, label) {
       name: '',
       min: 0,
       max: Math.ceil(Math.max(...data.actual, ...data.predicted) * 1.3 / 10) * 10,
-      ...AXIS_STYLE
+      ...AS
     },
     series: [
       {
@@ -136,14 +166,25 @@ function renderBenchmarkChart(param) {
   const chart = initOrGet('chart-benchmark');
   if (!chart) return;
 
-  const d = generateBenchmarkData(200);
+  const unitSel    = document.getElementById('bm-unit');
+  const processSel = document.getElementById('bm-process');
+  const unitVal    = unitSel    ? (parseInt(unitSel.value) || 3) : 3;
+  const processVal = processSel ? (processSel.value || '工艺流程A') : '工艺流程A';
+
+  const d = generateBenchmarkData(200, unitVal);
   const maxIdx = d.vals.indexOf(Math.max(...d.vals));
 
+  const label = document.getElementById('bm-chart-label');
+  const paramName = param || '总排放量当前小时均值';
+  if (label) label.textContent = `${paramName} · ${unitVal}#机组 · ${processVal}`;
+
+  const AS = getAxisStyle();
+
   chart.setOption({
-    ...CHART_THEME,
+    ...getChartTheme(),
     grid: { top: 14, right: 14, bottom: 30, left: 46 },
     tooltip: {
-      ...TOOLTIP_STYLE,
+      ...getTooltipStyle(),
       trigger: 'axis',
       formatter: params => {
         const p = params[0];
@@ -156,17 +197,17 @@ function renderBenchmarkChart(param) {
     xAxis: {
       type: 'category',
       data: d.times,
-      ...AXIS_STYLE,
-      axisLabel: { ...AXIS_STYLE.axisLabel, interval: Math.ceil(d.times.length / 14) - 1 }
+      ...AS,
+      axisLabel: { ...AS.axisLabel, interval: Math.ceil(d.times.length / 14) - 1 }
     },
     yAxis: {
       type: 'value',
       min: 0,
       max: 1,
-      ...AXIS_STYLE
+      ...AS
     },
     series: [{
-      name: param || '总排放量当前小时均值',
+      name: paramName,
       type: 'line',
       data: d.vals,
       smooth: true,
@@ -184,7 +225,6 @@ function renderBenchmarkChart(param) {
   }, true);
   chart.resize();
 
-  // Set default point info
   updatePointInfo(d.times[maxIdx], d.vals[maxIdx]);
 }
 
@@ -202,30 +242,32 @@ function renderModelChart() {
   const rmses = MODEL_VERSIONS.map(m => parseFloat(m.rmse)).reverse();
   const maes  = MODEL_VERSIONS.map(m => parseFloat(m.mae)).reverse();
 
+  const AS = getAxisStyle();
+
   chart.setOption({
-    ...CHART_THEME,
+    ...getChartTheme(),
     grid: { top: 24, right: 14, bottom: 34, left: 44 },
     legend: {
       top: 4,
-      textStyle: { color: 'rgba(180,210,255,0.7)', fontSize: 11 },
+      textStyle: getLegendTextStyle(),
       itemWidth: 14,
       itemHeight: 8
     },
     tooltip: {
-      ...TOOLTIP_STYLE,
+      ...getTooltipStyle(),
       trigger: 'axis',
       axisPointer: { type: 'shadow' }
     },
     xAxis: {
       type: 'category',
       data: vers,
-      ...AXIS_STYLE
+      ...AS
     },
     yAxis: {
       type: 'value',
       name: 'Error',
-      nameTextStyle: { color: 'rgba(180,210,255,0.5)', fontSize: 10 },
-      ...AXIS_STYLE
+      nameTextStyle: { color: isLight() ? 'rgba(40,80,140,0.5)' : 'rgba(180,210,255,0.5)', fontSize: 10 },
+      ...AS
     },
     series: [
       {
